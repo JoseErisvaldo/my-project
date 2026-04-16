@@ -1,16 +1,15 @@
-import { useState, type FormEvent } from "react";
-import { useLogin } from "../hooks/use-login";
+import { useLoginForm } from "../hooks/use-login-form";
 
 export function Login() {
-  const { mutate, isPending, error } = useLogin();
-  console.log(error);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    mutate({ email, password });
-  }
+  const {
+    email,
+    password,
+    setEmail,
+    setPassword,
+    handleSubmit,
+    errors,
+    isPending,
+  } = useLoginForm();
 
   return (
     <div className="w-full max-w-md px-6 py-12 mx-auto border border-gray-800 rounded-xl shadow-lg">
@@ -35,7 +34,9 @@ export function Login() {
             <label className="text-xs font-semibold uppercase ml-1">
               E-mail
             </label>
-
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>
+            )}
             <input
               className="w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
               type="email"
@@ -49,7 +50,9 @@ export function Login() {
             <label className="text-xs font-semibold uppercase ml-1">
               Senha
             </label>
-
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password[0]}</p>
+            )}
             <input
               className="w-full mt-1 px-4 py-3 rounded-lg bg-gray-100 focus:ring-2 focus:ring-blue-500 outline-none"
               type="password"
@@ -78,12 +81,6 @@ export function Login() {
           >
             {isPending ? "Entrando..." : "Entrar"}
           </button>
-
-          {error && (
-            <p className="text-red-500 text-sm text-center">
-              Erro ao autenticar
-            </p>
-          )}
         </form>
 
         <div className="mt-6 text-sm">
