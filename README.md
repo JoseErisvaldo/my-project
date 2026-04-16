@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# My Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação React + TypeScript com Vite, focada em autenticação e arquitetura orientada a features.
 
-Currently, two official plugins are available:
+## Tecnologias usadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- TypeScript 6
+- Vite 8
+- React Router DOM 7
+- @tanstack/react-query
+- Axios
+- Tailwind CSS 4
+- Zod
+- react-toastify
+- ESLint
 
-## React Compiler
+## Arquitetura do projeto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+A organização do código segue uma abordagem feature-based com separação de responsabilidades:
 
-## Expanding the ESLint configuration
+- `src/features/<feature>/` — cada feature tem sua própria pasta
+  - `application/` — casos de uso e hooks de autenticação
+  - `domain/` — tipos, DTOs e contrato de repositório
+  - `infrastructure/` — implementação de API e repositório
+  - `presentation/` — tela de login, componentes e hooks
+- `src/features/shared`
+  - `auth/` — contexto global de autenticação, hooks e tipos
+  - `infra/http/` — instância Axios com interceptor de token
+- `src/routes/` — roteamento principal da aplicação
+- `src/main.tsx` — ponto de entrada com providers globais
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Fluxo de autenticação
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. O usuário envia email e senha no formulário de login.
+2. O hook `useLoginForm` faz validação e dispara a mutação `useLogin`.
+3. `useLogin` executa o caso de uso `LoginUseCase` que chama o repositório `AuthRepositoryImpl`.
+4. A chamada HTTP é feita em `src/features/auth/infrastructure/api/auth.api.ts`.
+5. O token e o usuário retornados pelo backend são armazenados via `AuthProvider`.
+6. O interceptor em `src/features/shared/infra/http/api.ts` envia o token automaticamente nas requisições.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Pontos importantes
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `src/main.tsx`
+  - `QueryClientProvider` para React Query
+  - `AuthProvider` para contexto de autenticação
+  - `RoutesApp` com `BrowserRouter`
+- `src/routes/routes.tsx`
+  - rota principal `/` para a tela de login
+- `src/features/auth/presentation/hooks/use-login-form.ts`
+  - controle de estado do formulário e tratamento de erros
+- `src/features/shared/auth/`
+  - contexto e hook `useAuth()` para acessar dados de autenticação
+
+## Como rodar
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Build de produção:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+Preview:
+
+```bash
+npm run preview
+```
+
+## Variáveis de ambiente
+
+- `VITE_API_URL` — URL base do backend de autenticação
+
+## Objetivo do projeto
+
+Criar um fluxo de login simples e escalável, com:
+
+- autenticação por JWT
+- armazenamento local de token e usuário
+- contexto global de auth
+- validação de formulário com Zod
+- gerenciamento de estado de requisição com React Query
+- estrutura clara para adicionar novas features
