@@ -1,4 +1,5 @@
 import type { AuthRepository } from "../domain/repository/auth.repository";
+import { loginSchema } from "../domain/schemas/auth.schema";
 import type { LoginDTO } from "../domain/types/auth.types";
 
 export class LoginUseCase {
@@ -9,10 +10,12 @@ export class LoginUseCase {
   }
 
   async execute(data: LoginDTO) {
-    if (!data.email || !data.password) {
-      throw new Error("Email e senha são obrigatórios");
+    const result = loginSchema.safeParse(data);
+
+    if (!result.success) {
+      throw result.error;
     }
 
-    return this.authRepository.login(data);
+    return this.authRepository.login(result.data);
   }
 }
